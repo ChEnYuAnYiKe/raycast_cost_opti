@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 
 import numpy as np
@@ -58,15 +57,17 @@ class Draw_MPC_point_stabilization_v1(object):
 
 
 class Draw_MPC_point_stabilization_v2(object):
-    def __init__(self, robot_states: list, init_state: np.array, target_state: np.array, rob_diam=0.3,
-                 export_fig=False):
+    def __init__(self, robot_states: list, control_states: list, init_state: np.array, target_state: np.array, rob_diam=0.3, export_fig=False):
         self.robot_states = robot_states
         self.init_state = init_state
         self.target_state = target_state
         self.rob_radius = rob_diam / 2.0
+        self.control_states = control_states
 
-        # 创建三个子图: 1个用于机器人动画, 2个用于折线图
-        self.fig, (self.ax1, self.ax2, self.ax3) = plt.subplots(1, 3, figsize=(21, 7))
+        # 创建五个子图
+        self.fig, axes = plt.subplots(2, 3, figsize=(10, 15))
+        self.ax1, self.ax2, self.ax3, self.ax4, self.ax5, self.ax6 = axes.flatten()
+        
         self.ax1.set_xlim(-0.8, 3)
         self.ax1.set_ylim(-0.8, 3)
 
@@ -75,12 +76,18 @@ class Draw_MPC_point_stabilization_v2(object):
         self.ax2.set_ylim(min([s[0] for s in self.robot_states]), max([s[0] for s in self.robot_states]))
         self.ax3.set_xlim(0, len(self.robot_states))
         self.ax3.set_ylim(min([s[1] for s in self.robot_states]), max([s[1] for s in self.robot_states]))
+        self.ax4.set_xlim(0, len(self.robot_states))
+        self.ax4.set_ylim(min([s[2] for s in self.robot_states]), max([s[2] for s in self.robot_states]))
+        self.ax5.set_xlim(0, len(self.control_states))
+        self.ax5.set_ylim(min([s[0] for s in self.control_states]), max([s[0] for s in self.control_states]))
+        self.ax6.set_xlim(0, len(self.control_states))
+        self.ax6.set_ylim(min([s[1] for s in self.control_states]), max([s[1] for s in self.control_states])) 
 
         # 初始化动画
         self.animation_init()
 
         # 创建动画
-        self.ani = animation.FuncAnimation(self.fig, self.animation_loop, frames=len(self.robot_states),
+        self.ani = animation.FuncAnimation(self.fig, self.animation_loop, frames=max(len(self.robot_states), len(self.control_states)),
                                            init_func=self.animation_init, interval=100, repeat=False)
 
         plt.grid('--')
@@ -108,9 +115,13 @@ class Draw_MPC_point_stabilization_v2(object):
         # 初始化折线图的线条
         self.line2, = self.ax2.plot([], [], 'r-', lw=2, label="State 0")
         self.line3, = self.ax3.plot([], [], 'g-', lw=2, label="State 1")
-        self.x_data, self.y_data1, self.y_data2 = [], [], []  # 存储折线图的数据
+        self.line4, = self.ax4.plot([], [], 'b-', lw=2, label="State 2")
+        self.line5, = self.ax5.plot([], [], 'r-', lw=2, label="Control 0")
+        self.line6, = self.ax6.plot([], [], 'g-', lw=2, label="Control 1")
+        
+        self.x_data, self.y_data1, self.y_data2, self.y_data3, self.y_data4, self.y_data5 = [], [], [], [], [], []  # 存储折线图的数据
 
-        return self.target_circle, self.target_arr, self.robot_body, self.robot_arr, self.line2, self.line3
+        return self.target_circle, self.target_arr, self.robot_body, self.robot_arr, self.line2, self.line3, self.line4, self.line5, self.line6
 
     def animation_loop(self, indx):
         # 更新机器人位置
@@ -126,12 +137,18 @@ class Draw_MPC_point_stabilization_v2(object):
         self.x_data.append(indx)
         self.y_data1.append(self.robot_states[indx][0])  # 第一个变量
         self.y_data2.append(self.robot_states[indx][1])  # 第二个变量
+        self.y_data3.append(self.robot_states[indx][2])  # 第三个变量
+        self.y_data4.append(self.control_states[indx][0])
+        self.y_data5.append(self.control_states[indx][1])
 
         # 更新折线图
         self.line2.set_data(self.x_data, self.y_data1)
         self.line3.set_data(self.x_data, self.y_data2)
-
-        return self.robot_arr, self.robot_body, self.line2, self.line3
+        self.line4.set_data(self.x_data, self.y_data3)
+        self.line5.set_data(self.x_data, self.y_data4)
+        self.line6.set_data(self.x_data, self.y_data5)
+    
+        return self.robot_arr, self.robot_body, self.line2, self.line3, self.line4, self.line5, self.line6
 
 class Draw_MPC_Obstacle(object):
     def __init__(self, robot_states: list, init_state: np.array, target_state: np.array, obstacle: np.array,

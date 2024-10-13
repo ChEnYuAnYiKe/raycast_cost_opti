@@ -27,8 +27,8 @@ def prediction_state(x0, u, T, N):
     return states_
 
 if __name__ == '__main__':
-    T = 0.2
-    N = 50
+    T = 0.1
+    N = 10
     v_max = 0.4
     # omega_max = np.pi/4.0
     omega_max = 1.9
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     u_c = []
     t_c = [t0] # for the time
     xx = []
-    sim_time = 30.0
+    sim_time = 20.0
 
     ## start MPC
     mpciter = 0

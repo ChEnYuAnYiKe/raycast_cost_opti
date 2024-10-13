@@ -1,11 +1,10 @@
-#!/usr/bin/env python
 # coding=utf-8
 
 import casadi as ca
 import numpy as np
 import time
 
-from draw import Draw_MPC_point_stabilization_v1
+from draw import Draw_MPC_point_stabilization_v1, Draw_MPC_point_stabilization_v2
 
 
 def shift_movement(T, t0, x0, u, x_n, f):
@@ -30,10 +29,11 @@ def prediction_state(x0, u, T, N):
 
 
 if __name__ == '__main__':
-    T = 0.2
-    N = 100
-    v_max = 0.6
-    omega_max = np.pi/4.0
+    T = 0.1
+    N = 50
+    v_max = 0.4
+    # omega_max = np.pi/4.0
+    omega_max = 1.9
 
     opti = ca.Opti()
     # control variables, linear velocity v and angle velocity omega
@@ -133,5 +133,5 @@ if __name__ == '__main__':
     print(mpciter)
     print('final error {}'.format(np.linalg.norm(final_state-current_state)))
     # draw function
-    draw_result = Draw_MPC_point_stabilization_v1(
+    draw_result = Draw_MPC_point_stabilization_v2(
         rob_diam=0.3, init_state=init_state, target_state=final_state, robot_states=xx)
